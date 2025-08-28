@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Email Assistant</title>
+</head>
+<body>
+    <h1>Upload de Email</h1>
+    <form method="post" action="/process" enctype="multipart/form-data">
+        <label>Upload de arquivo (.txt ou .pdf):</label><br>
+        <input type="file" name="file"><br><br>
+        <label>Ou insira o texto do email:</label><br>
+        <textarea name="text" rows="6" cols="50"></textarea><br><br>
+        <button type="submit">Processar</button>
+    </form>
+
+    {% if content %}
+    <h2>Conteúdo processado:</h2>
+    <pre>{{ content }}</pre>
+    {% endif %}
+</body>
+</html>
