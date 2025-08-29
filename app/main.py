@@ -6,8 +6,9 @@ import pdfplumber
 
 app = FastAPI()
 
-templates = Jinja2Templates(directory="app/templates")
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -17,7 +18,11 @@ async def home(request: Request):
 async def process_email(request: Request, file: UploadFile = None, text: str = Form(None)):
     content = ""
 
-    if file:
+    # Primeiro, checa se enviou texto
+    if text and text.strip() != "":
+        content = text
+    # Depois checa se enviou arquivo
+    elif file and file.filename != "":
         if file.filename.endswith(".txt"):
             content = (await file.read()).decode("utf-8")
         elif file.filename.endswith(".pdf"):
@@ -26,9 +31,8 @@ async def process_email(request: Request, file: UploadFile = None, text: str = F
                     content += page.extract_text() + "\n"
         else:
             content = "Formato não suportado."
-    elif text:
-        content = text
     else:
         content = "Nenhum conteúdo fornecido."
+
 
     return templates.TemplateResponse("index.html", {"request": request, "content": content})
