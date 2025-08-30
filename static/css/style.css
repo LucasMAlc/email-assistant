@@ -1,0 +1,111 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f4f8;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #0077cc;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+main {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+    color: #0077cc;
+}
+
+label {
+    font-weight: bold;
+}
+
+input[type="file"], textarea, select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 6px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #ff6600;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #e65c00;
+}
+
+.content-box {
+    background: #f6f8fa;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    white-space: pre-wrap;
+}
+
+.category {
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.category.produtivo {
+    color: green;
+}
+
+.category.improdutivo {
+    color: gray;
+}
+
+.suggestion {
+    background: #fff3e6;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    margin-top: 6px;
+}
+
+.error {
+    color: darkred;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+form.feedback {
+    margin-top: 20px;
+    border-top: 1px solid #ccc;
+    padding-top: 15px;
+}
+
+form.feedback select {
+    width: auto;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.download-btn {
+    margin-top: 10px;
+    background-color: #0077cc;
+}
+
+.download-btn:hover {
+    background-color: #005fa3;
+}
