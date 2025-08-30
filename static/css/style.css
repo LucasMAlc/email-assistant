@@ -1,98 +1,125 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f4f8;
-    color: #1a1a1a;
+/* Reset básico */
+* {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f9;
+    color: #2b2b2b;
+    line-height: 1.6;
+}
+
 header {
-    background-color: #0077cc;
+    background-color: #005f99; /* azul mais sóbrio */
     color: white;
-    padding: 20px;
+    padding: 25px 20px;
     text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+header h1 {
+    font-size: 28px;
+    font-weight: 600;
 }
 
 main {
-    max-width: 800px;
-    margin: 30px auto;
-    padding: 20px;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
     background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-h1 {
-    color: #0077cc;
+h2 {
+    color: #005f99;
+    margin-bottom: 15px;
 }
 
 label {
-    font-weight: bold;
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: block;
 }
 
 input[type="file"], textarea, select {
     width: 100%;
-    padding: 8px;
-    margin-top: 6px;
+    padding: 10px;
     margin-bottom: 15px;
     border-radius: 6px;
     border: 1px solid #ccc;
-    box-sizing: border-box;
+    font-size: 14px;
+}
+
+textarea {
+    resize: vertical;
 }
 
 button {
-    background-color: #ff6600;
+    background-color: #ff7f32; /* laranja formal */
     color: white;
-    padding: 10px 20px;
+    padding: 12px 22px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    font-size: 15px;
 }
 
 button:hover {
-    background-color: #e65c00;
+    background-color: #e67329;
 }
 
 .content-box {
-    background: #f6f8fa;
-    padding: 10px;
-    border-radius: 6px;
-    margin-bottom: 10px;
+    background: #f0f4f8;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
     white-space: pre-wrap;
+    font-family: 'Courier New', monospace;
 }
 
 .category {
-    font-weight: bold;
+    font-weight: 600;
     margin-top: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    display: inline-block;
 }
 
 .category.produtivo {
-    color: green;
+    background-color: #d4edda;
+    color: #155724;
 }
 
 .category.improdutivo {
-    color: gray;
+    background-color: #e2e3e5;
+    color: #6c757d;
 }
 
 .suggestion {
-    background: #fff3e6;
-    padding: 10px;
-    border-radius: 6px;
+    background: #fff4e5;
+    padding: 15px;
+    border-radius: 8px;
     border: 1px solid #e5e7eb;
-    margin-top: 6px;
+    margin-top: 10px;
+    font-size: 14px;
 }
 
 .error {
-    color: darkred;
+    color: #b00020;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 form.feedback {
-    margin-top: 20px;
-    border-top: 1px solid #ccc;
+    margin-top: 25px;
     padding-top: 15px;
+    border-top: 1px solid #d1d1d1;
 }
 
 form.feedback select {
@@ -102,10 +129,10 @@ form.feedback select {
 }
 
 .download-btn {
-    margin-top: 10px;
-    background-color: #0077cc;
+    margin-top: 12px;
+    background-color: #005f99;
 }
 
 .download-btn:hover {
-    background-color: #005fa3;
+    background-color: #004d80;
 }
