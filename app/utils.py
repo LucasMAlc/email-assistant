@@ -35,7 +35,7 @@ def classify_email(text: str) -> tuple:
     """
     text = preprocess_text(text)
 
-    regras_produtivo = ["projeto", "relatorio", "prazo", "entrega", "reuniao", "orcamento"]
+    regras_produtivo = ["projeto", "relatorio", "prazo", "entrega", "reuniao", "orcamento", "solicitar", "urgente"]
     regras_improdutivo = ["promocao", "oferta", "desconto", "feliz natal", "boas festas"]
 
     for palavra in regras_produtivo:

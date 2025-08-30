@@ -26,7 +26,8 @@ async def home(request: Request):
 async def process_email(request: Request, file: UploadFile = None, text: str = Form(None)):
     content = ""
 
-    if file:
+    # Verifica se o arquivo foi enviado e tem nome
+    if file and file.filename != "":
         filepath = os.path.join(UPLOAD_DIR, file.filename)
         with open(filepath, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -36,6 +37,7 @@ async def process_email(request: Request, file: UploadFile = None, text: str = F
         content = text
     else:
         content = "Nenhum conteúdo fornecido."
+
 
     categoria, confianca, fonte = classify_email(content)
     resposta = generate_response(categoria)
