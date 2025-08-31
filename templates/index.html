@@ -12,14 +12,15 @@
 </header>
 
 <main>
-    <form method="post" action="/process" enctype="multipart/form-data" onsubmit="return validateForm()">
+    <form method="post" action="/process" enctype="multipart/form-data" onsubmit="showLoading(); return validateForm()">
         <label>Upload de arquivo (.txt ou .pdf):</label>
         <input type="file" name="file">
 
         <label>Ou insira o texto do email:</label>
         <textarea name="text" rows="6" cols="50"></textarea>
 
-        <button type="submit">Processar</button>
+        <button type="submit" id="process-btn">Processar</button>
+        <div id="loading" style="display:none; margin-top:10px; color:#005f99;">Processando...</div>
     </form>
 
     {% if error %}
@@ -32,7 +33,7 @@
 
         {% if categoria %}
             <div class="category {% if categoria=='Produtivo' %}produtivo{% else %}improdutivo{% endif %}">
-                Categoria: {{ categoria }} | Confiança: {{ confianca }} | Fonte: {{ fonte }}
+                Categoria: {{ categoria }}
             </div>
 
             <div class="suggestion">
@@ -49,7 +50,7 @@
     <form method="post" action="/feedback" class="feedback">
         <input type="hidden" name="original_text" value="{{ content }}">
         <input type="hidden" name="predicted" value="{{ categoria }}">
-        
+
         <label>Está correto?</label>
         <select name="correction">
             <option value="sim">Sim</option>

@@ -1,32 +1,31 @@
+import csv
 import os
 import re
 import pdfplumber
 import nltk
 from nltk.corpus import stopwords
-import requests
-import json
 from dotenv import load_dotenv
+from openai import OpenAI
 
 # -----------------------------
-# Carrega variáveis do .env
+# Carrega .env
 # -----------------------------
 load_dotenv()
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+if not DEEPSEEK_API_KEY:
+    raise ValueError("A chave DEEPSEEK_API_KEY não foi encontrada no .env")
 
-if not OPENROUTER_API_KEY:
-    raise ValueError("A chave OPENROUTER_API_KEY não foi encontrada. Verifique seu arquivo .env")
-
-API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL_NAME = "deepseek/deepseek-chat-v3-0324:free"
+# Cliente DeepSeek
+client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://api.deepseek.com")
 
 # -----------------------------
-# Setup NLTK
+# NLTK e stopwords
 # -----------------------------
 nltk.download("stopwords", quiet=True)
 STOP_WORDS = set(stopwords.words("portuguese"))
 
 # -----------------------------
-# Pré-processamento de texto
+# Pré-processamento
 # -----------------------------
 def preprocess_text(text: str) -> str:
     text = text.lower()
@@ -35,7 +34,7 @@ def preprocess_text(text: str) -> str:
     return " ".join(tokens)
 
 # -----------------------------
-# Extração de texto de arquivos
+# Extração de texto
 # -----------------------------
 def extract_text_from_file(file, filename: str) -> str:
     if filename.endswith(".txt"):
@@ -51,79 +50,70 @@ def extract_text_from_file(file, filename: str) -> str:
     return "Formato não suportado."
 
 # -----------------------------
-# Classificação com DeepSeek
+# Classificação e resposta via DeepSeek
 # -----------------------------
-def classify_email(text: str):
-    """Classifica email usando DeepSeek via OpenRouter."""
+def classify_email(text: str) -> tuple:
+    """Classifica email como Produtivo ou Improdutivo usando DeepSeek."""
     prompt = f"""
-    Analise o seguinte email e classifique em uma das categorias:
-    - Produtivo
-    - Improdutivo
-    
+    Classifique o seguinte email em uma das categorias: Produtivo ou Improdutivo. 
+    Produtivo: Relacionados à trabalho e solicitações importantes.
+    Improdutivo: Felicitações, promoções, aniversários, etc.
     Email:
-    {text[:500]}
-    
+    {text[:1000]}
     Responda apenas com a categoria.
     """
     try:
-        response = requests.post(
-            API_URL,
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            data=json.dumps({
-                "model": MODEL_NAME,
-                "messages": [
-                    {"role": "system", "content": "Você é um assistente especializado em classificação de emails."},
-                    {"role": "user", "content": prompt}
-                ]
-            }),
-            timeout=60
+        response = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": "Você é um assistente especializado em classificação de emails."},
+                {"role": "user", "content": prompt}
+            ],
+            stream=False
         )
-        response.raise_for_status()
-        result = response.json()
-        
-        category = result["choices"][0]["message"]["content"].strip()
+        category = response.choices[0].message.content.strip()
         return category, 1.0, "deepseek"
     except Exception as e:
-        print(f"Erro ao classificar via API: {e}")
+        print(f"Erro ao classificar via DeepSeek: {e}")
         return "Erro", 0.0, "error"
 
-# -----------------------------
-# Geração de resposta com DeepSeek
-# -----------------------------
 def generate_response(category: str, text: str) -> str:
-    """Gera resposta ao email usando DeepSeek via OpenRouter."""
+    """Gera resposta ao email usando DeepSeek."""
     prompt = f"""
-    Você é um assistente que responde emails de forma educada.
-    Categoria do email: {category}
-    Email original:
-    {text[:1000]}
-
-    Escreva uma resposta clara e formal.
-    """
+            Você é um assistente de uma grande empresa financeira que responde emails de forma formal e educada.
+            Categoria do email: {category}
+            Email original:
+            {text[:1000]}
+            Responda somente com o corpo do email.
+            """
     try:
-        response = requests.post(
-            API_URL,
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            data=json.dumps({
-                "model": MODEL_NAME,
-                "messages": [
-                    {"role": "system", "content": "Você é um assistente especializado em escrever emails formais."},
-                    {"role": "user", "content": prompt}
-                ]
-            }),
-            timeout=60
+        response = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": "Você é um assistente especializado em responder emails."},
+                {"role": "user", "content": prompt}
+            ],
+            stream=False
         )
-        response.raise_for_status()
-        result = response.json()
-        
-        answer = result["choices"][0]["message"]["content"].strip()
-        return answer if answer else "Obrigado pelo contato!"
+        return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"Erro ao gerar resposta via API: {e}")
+        print(f"Erro ao gerar resposta via DeepSeek: {e}")
         return "Ocorreu um erro ao tentar gerar a resposta."
+
+FEEDBACK_FILE = os.path.join("data", "feedback.csv")
+
+def save_feedback(original_text: str, predicted: str, correction: str, new_category: str = ""):
+    """Salva feedback do usuário em CSV."""
+    os.makedirs(os.path.dirname(FEEDBACK_FILE), exist_ok=True)
+    file_exists = os.path.isfile(FEEDBACK_FILE)
+    
+    with open(FEEDBACK_FILE, mode="a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["original_text", "predicted", "correction", "new_category"])
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow({
+            "original_text": original_text,
+            "predicted": predicted,
+            "correction": correction,
+            "new_category": new_category
+        })

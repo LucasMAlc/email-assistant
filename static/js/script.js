@@ -25,3 +25,8 @@ function showToast(msg) {
     toast.classList.add("show");
     setTimeout(() => toast.classList.remove("show"), 2000);
 }
+
+// Mostra "Processando..." quando envia o formulário
+function showLoading() {
+    document.getElementById("loading").style.display = "block";
+}
