@@ -2,7 +2,7 @@
 
 Um assistente de emails que classifica mensagens como Produtivas ou Improdutivas e gera respostas automáticas usando a API DeepSeek.
 
-Disponível em: 
+Disponível em: [Email Assistant](https://email-assistant-1kk4.onrender.com)
 
 ### Funcionalidades
 
