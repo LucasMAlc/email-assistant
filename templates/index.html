@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Email Assistant</title>
     <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
-    <script src="{{ url_for('static', path='js/script.js') }}"></script>
 </head>
 <body>
     <header>
@@ -37,12 +36,11 @@
 
                 <div class="suggestion">
                     <strong>Resposta sugerida:</strong>
-                    <div>{{ resposta }}</div>
+                    <div id="suggestion-text">{{ resposta }}</div>
                 </div>
 
-                <button type="button" class="download-btn" 
-                    onclick="downloadResponse('{{ categoria }}', '{{ confianca }}', '{{ fonte }}', '{{ resposta }}')">
-                    Baixar Resposta
+                <button type="button" class="download-btn" id="copy-btn">
+                    Copiar Resposta
                 </button>
             {% endif %}
         {% endif %}
@@ -67,5 +65,8 @@
             <button type="submit">Enviar feedback</button>
         </form>
     </main>
+
+    <!-- Carrega o JS no final do body -->
+    <script src="{{ url_for('static', path='js/script.js') }}"></script>
 </body>
 </html>

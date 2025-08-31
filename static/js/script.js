@@ -8,11 +8,40 @@ function validateForm() {
     return true;
 }
 
-function downloadResponse(categoria, confianca, fonte, resposta) {
-    const content = `Categoria: ${categoria}\nConfiança: ${confianca}\nFonte: ${fonte}\n\nResposta sugerida:\n${resposta}`;
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "resposta_email.txt";
-    link.click();
+const copyBtn = document.getElementById("copy-btn");
+if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+        const suggestion = document.getElementById("suggestion-text").innerText.trim();
+        if (!suggestion) {
+            alert("Não há resposta para copiar.");
+            return;
+        }
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(suggestion)
+                .then(() => alert("Resposta copiada para a área de transferência!"))
+                .catch(err => {
+                    console.error("Erro ao copiar:", err);
+                    alert("Não foi possível copiar a resposta.");
+                });
+        } else {
+            const textarea = document.createElement("textarea");
+            textarea.value = suggestion;
+            textarea.style.position = "fixed";
+            textarea.style.left = "-9999px";
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+
+            try {
+                document.execCommand("copy");
+                alert("Resposta copiada para a área de transferência!");
+            } catch (err) {
+                console.error("Erro ao copiar:", err);
+                alert("Não foi possível copiar a resposta.");
+            }
+
+            document.body.removeChild(textarea);
+        }
+    });
 }
