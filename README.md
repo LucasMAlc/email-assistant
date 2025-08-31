@@ -29,24 +29,30 @@ Um assistente de emails que classifica mensagens como Produtivas ou Improdutivas
 
 1. Clone o repositório:
 
-'''bash
+```bash
 git clone https://github.com/LucasMAlc/email-assistant
 cd email-assistant
-'''
+```
 
 2. Crie e ative o ambiente virtual:
 
+```bash
 python -m venv .venv
 # Windows
 .venv\Scripts\activate
 # Linux/macOS
 source .venv/bin/activate
+```
 
 3. Instale as dependências:
 
+```bash
 pip install -r requirements.txt
+```
 
 4. Configure as variáveis de ambiente:
 Crie um arquivo .env na raiz do projeto:
 
+```bash
 DEEPSEEK_API_KEY=your_deepseek_api_key
+```
