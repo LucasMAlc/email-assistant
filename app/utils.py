@@ -1,8 +1,23 @@
+import os
 import re
 import pdfplumber
 import nltk
 from nltk.corpus import stopwords
-from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+import requests
+import json
+from dotenv import load_dotenv
+
+# -----------------------------
+# Carrega variáveis do .env
+# -----------------------------
+load_dotenv()
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+
+if not OPENROUTER_API_KEY:
+    raise ValueError("A chave OPENROUTER_API_KEY não foi encontrada. Verifique seu arquivo .env")
+
+API_URL = "https://openrouter.ai/api/v1/chat/completions"
+MODEL_NAME = "deepseek/deepseek-chat-v3-0324:free"
 
 # -----------------------------
 # Setup NLTK
@@ -36,51 +51,79 @@ def extract_text_from_file(file, filename: str) -> str:
     return "Formato não suportado."
 
 # -----------------------------
-# Classificador local
+# Classificação com DeepSeek
 # -----------------------------
-CLASSIFIER = pipeline(
-    "text-classification",
-    model="cardiffnlp/twitter-roberta-base-sentiment-latest",
-    top_k=1
-)
-
 def classify_email(text: str):
-    """Classifica email como 'Produtivo' ou 'Improdutivo'."""
-    result = CLASSIFIER(text[:500])[0]
-    label = result["label"]
-    text_lower = text.lower()
+    """Classifica email usando DeepSeek via OpenRouter."""
+    prompt = f"""
+    Analise o seguinte email e classifique em uma das categorias:
+    - Produtivo
+    - Improdutivo
     
-    if label == "LABEL_0":  # Negativo -> Produtivo
-        categoria = "Produtivo"
-    elif label == "LABEL_2":  # Positivo -> palavras sociais
-        if any(word in text_lower for word in ["obrigado", "parabens", "feliz", "agradec"]):
-            categoria = "Improdutivo"
-        else:
-            categoria = "Produtivo"
-    else:
-        categoria = "Produtivo"  # Neutro
+    Email:
+    {text[:500]}
     
-    return categoria, 1.0, "local_model"
-
-# -----------------------------
-# Gerador de respostas local
-# -----------------------------
-# Carrega o modelo Gemma localmente (ou qualquer modelo que você tenha)
-MODEL_NAME = "google/gemma-3-270m"  # substituir pelo caminho local se tiver o modelo baixado
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
-GENERATOR = pipeline("text-generation", model=model, tokenizer=tokenizer)
-
-def generate_response(category: str, text: str) -> str:
-    """Gera resposta ao email usando modelo local."""
-    prompt = f"Responda ao seguinte email: {text[:200]}"
+    Responda apenas com a categoria.
+    """
     try:
-        result = GENERATOR(prompt, max_new_tokens=150, temperature=0.7)
-        if isinstance(result, list) and result:
-            generated_text = result[0]["generated_text"]
-            response_text = generated_text[len(prompt):].strip()
-            return response_text if response_text else "Obrigado pelo contato!"
-        return "Não foi possível gerar uma resposta."
+        response = requests.post(
+            API_URL,
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            data=json.dumps({
+                "model": MODEL_NAME,
+                "messages": [
+                    {"role": "system", "content": "Você é um assistente especializado em classificação de emails."},
+                    {"role": "user", "content": prompt}
+                ]
+            }),
+            timeout=60
+        )
+        response.raise_for_status()
+        result = response.json()
+        
+        category = result["choices"][0]["message"]["content"].strip()
+        return category, 1.0, "deepseek"
     except Exception as e:
-        print(f"Erro ao gerar resposta local: {e}")
+        print(f"Erro ao classificar via API: {e}")
+        return "Erro", 0.0, "error"
+
+# -----------------------------
+# Geração de resposta com DeepSeek
+# -----------------------------
+def generate_response(category: str, text: str) -> str:
+    """Gera resposta ao email usando DeepSeek via OpenRouter."""
+    prompt = f"""
+    Você é um assistente que responde emails de forma educada.
+    Categoria do email: {category}
+    Email original:
+    {text[:1000]}
+
+    Escreva uma resposta clara e formal.
+    """
+    try:
+        response = requests.post(
+            API_URL,
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            data=json.dumps({
+                "model": MODEL_NAME,
+                "messages": [
+                    {"role": "system", "content": "Você é um assistente especializado em escrever emails formais."},
+                    {"role": "user", "content": prompt}
+                ]
+            }),
+            timeout=60
+        )
+        response.raise_for_status()
+        result = response.json()
+        
+        answer = result["choices"][0]["message"]["content"].strip()
+        return answer if answer else "Obrigado pelo contato!"
+    except Exception as e:
+        print(f"Erro ao gerar resposta via API: {e}")
         return "Ocorreu um erro ao tentar gerar a resposta."
