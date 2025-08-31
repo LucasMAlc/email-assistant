@@ -4,7 +4,7 @@ Um assistente de emails que classifica mensagens como Produtivas ou Improdutivas
 
 Disponível em: 
 
-## Funcionalidades
+### Funcionalidades
 
 - Upload de arquivos .txt ou .pdf ou digitação manual do texto do email.
 
@@ -59,7 +59,7 @@ Crie um arquivo .env na raiz do projeto:
 DEEPSEEK_API_KEY=your_deepseek_api_key
 ```
 
-## Rodar localmente
+### Rodar localmente
 
 - Windows / Linux / macOS:
 
@@ -74,7 +74,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 - Acesse a aplicação em: http://localhost:8000
 
-## Estrutura do projeto
+### Estrutura do projeto
 ```bash
 email-assistant/
 │
