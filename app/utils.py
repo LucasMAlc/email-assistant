@@ -2,9 +2,7 @@ import re
 import pdfplumber
 import nltk
 from nltk.corpus import stopwords
-from transformers import pipeline
-import os
-import requests
+from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 
 # -----------------------------
 # Setup NLTK
@@ -43,7 +41,7 @@ def extract_text_from_file(file, filename: str) -> str:
 CLASSIFIER = pipeline(
     "text-classification",
     model="cardiffnlp/twitter-roberta-base-sentiment-latest",
-    top_k=1 
+    top_k=1
 )
 
 def classify_email(text: str):
@@ -64,34 +62,25 @@ def classify_email(text: str):
     
     return categoria, 1.0, "local_model"
 
-
 # -----------------------------
-# Gerador de respostas via API Gemma
+# Gerador de respostas local
 # -----------------------------
-HF_TOKEN = os.getenv("HF_TOKEN")
-API_URL = "https://api-inference.huggingface.co/models/google/gemma-3-270m"
-HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
+# Carrega o modelo Gemma localmente (ou qualquer modelo que você tenha)
+MODEL_NAME = "google/gemma-3-270m"  # substituir pelo caminho local se tiver o modelo baixado
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+GENERATOR = pipeline("text-generation", model=model, tokenizer=tokenizer)
 
 def generate_response(category: str, text: str) -> str:
-    """Gera resposta ao email usando Gemma 3 270M via API."""
+    """Gera resposta ao email usando modelo local."""
     prompt = f"Responda ao seguinte email: {text[:200]}"
-    payload = {
-        "inputs": prompt,
-        "parameters": {"max_new_tokens": 150, "temperature": 0.7}
-    }
-    
     try:
-        response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=30)
-        response.raise_for_status()
-        result = response.json()
-        
+        result = GENERATOR(prompt, max_new_tokens=150, temperature=0.7)
         if isinstance(result, list) and result:
-            generated_text = result[0].get("generated_text", "")
+            generated_text = result[0]["generated_text"]
             response_text = generated_text[len(prompt):].strip()
             return response_text if response_text else "Obrigado pelo contato!"
-        
         return "Não foi possível gerar uma resposta."
-    
     except Exception as e:
-        print(f"Erro ao gerar resposta via API: {e}")
+        print(f"Erro ao gerar resposta local: {e}")
         return "Ocorreu um erro ao tentar gerar a resposta."
