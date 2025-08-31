@@ -2,13 +2,13 @@ function validateForm() {
     const fileInput = document.querySelector('input[name="file"]');
     const textInput = document.querySelector('textarea[name="text"]');
     if (!fileInput.value && !textInput.value.trim()) {
-        alert("Por favor, envie um arquivo ou insira um texto.");
+        showToast("Envie um arquivo ou insira um texto.!");
         return false;
     }
     return true;
 }
 
-// Copiar resposta para o clipboard
+// Copiar resposta 
 function copyResponse() {
     const resposta = document.getElementById("resposta-text").innerText;
     navigator.clipboard.writeText(resposta).then(() => {
@@ -18,7 +18,6 @@ function copyResponse() {
     });
 }
 
-// Toast para mensagens curtas
 function showToast(msg) {
     const toast = document.getElementById("toast");
     toast.innerText = msg;
@@ -26,7 +25,6 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove("show"), 2000);
 }
 
-// Mostra "Processando..." quando envia o formulário
 function showLoading() {
     document.getElementById("loading").style.display = "block";
 }

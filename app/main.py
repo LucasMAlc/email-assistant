@@ -68,7 +68,7 @@ async def feedback(
             "request": request,
             "content": original_text,
             "categoria": predicted,
-            "resposta": "",  # mantém vazio, só salvou feedback
+            "resposta": "",
             "toast_message": "Feedback salvo com sucesso!"
         })
     except Exception as e:

@@ -1,15 +1,11 @@
-import csv
-import os
-import re
+import csv, os, re
 import pdfplumber
 import nltk
 from nltk.corpus import stopwords
 from dotenv import load_dotenv
 from openai import OpenAI
 
-# -----------------------------
 # Carrega .env
-# -----------------------------
 load_dotenv()
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 if not DEEPSEEK_API_KEY:
@@ -18,24 +14,18 @@ if not DEEPSEEK_API_KEY:
 # Cliente DeepSeek
 client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://api.deepseek.com")
 
-# -----------------------------
 # NLTK e stopwords
-# -----------------------------
 nltk.download("stopwords", quiet=True)
 STOP_WORDS = set(stopwords.words("portuguese"))
 
-# -----------------------------
 # Pré-processamento
-# -----------------------------
 def preprocess_text(text: str) -> str:
     text = text.lower()
     text = re.sub(r"[^a-zá-ú0-9\s]", "", text)
     tokens = [word for word in text.split() if word not in STOP_WORDS]
     return " ".join(tokens)
 
-# -----------------------------
 # Extração de texto
-# -----------------------------
 def extract_text_from_file(file, filename: str) -> str:
     if filename.endswith(".txt"):
         return file.read().decode("utf-8")
@@ -49,11 +39,10 @@ def extract_text_from_file(file, filename: str) -> str:
         return content
     return "Formato não suportado."
 
-# -----------------------------
 # Classificação e resposta via DeepSeek
-# -----------------------------
 def classify_email(text: str) -> tuple:
     """Classifica email como Produtivo ou Improdutivo usando DeepSeek."""
+
     prompt = f"""
     Classifique o seguinte email em uma das categorias: Produtivo ou Improdutivo. 
     Produtivo: Relacionados à trabalho e solicitações importantes.
@@ -79,6 +68,7 @@ def classify_email(text: str) -> tuple:
 
 def generate_response(category: str, text: str) -> str:
     """Gera resposta ao email usando DeepSeek."""
+
     prompt = f"""
             Você é um assistente de uma grande empresa financeira que responde emails de forma formal e educada.
             Categoria do email: {category}
@@ -104,6 +94,7 @@ FEEDBACK_FILE = os.path.join("data", "feedback.csv")
 
 def save_feedback(original_text: str, predicted: str, correction: str, new_category: str = ""):
     """Salva feedback do usuário em CSV."""
+    
     os.makedirs(os.path.dirname(FEEDBACK_FILE), exist_ok=True)
     file_exists = os.path.isfile(FEEDBACK_FILE)
     

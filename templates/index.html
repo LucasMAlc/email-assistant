@@ -69,5 +69,16 @@
 
     <div id="toast" class="toast"></div>
 </main>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('feedback') === '1') {
+        showToast("Feedback enviado!");
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+});
+</script>
+
 </body>
 </html>
