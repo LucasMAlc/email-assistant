@@ -1,67 +1,97 @@
 import re
+import pdfplumber
 import nltk
 from nltk.corpus import stopwords
-import pdfplumber
+from transformers import pipeline
+import os
+import requests
 
-# Baixar stopwords do NLTK (executar uma vez)
-nltk.download('stopwords')
-stop_words = set(stopwords.words('portuguese'))
+# -----------------------------
+# Setup NLTK
+# -----------------------------
+nltk.download("stopwords", quiet=True)
+STOP_WORDS = set(stopwords.words("portuguese"))
 
+# -----------------------------
+# Pré-processamento de texto
+# -----------------------------
 def preprocess_text(text: str) -> str:
-    """Limpa e normaliza o texto para melhorar a classificação"""
     text = text.lower()
-    text = re.sub(r'[^a-zá-ú0-9\s]', '', text)
-    tokens = [word for word in text.split() if word not in stop_words]
-    return ' '.join(tokens)
+    text = re.sub(r"[^a-zá-ú0-9\s]", "", text)
+    tokens = [word for word in text.split() if word not in STOP_WORDS]
+    return " ".join(tokens)
 
+# -----------------------------
+# Extração de texto de arquivos
+# -----------------------------
 def extract_text_from_file(file, filename: str) -> str:
-    """Extrai texto de arquivos .txt ou .pdf"""
-    content = ""
     if filename.endswith(".txt"):
-        content = file.decode("utf-8")
+        return file.read().decode("utf-8")
     elif filename.endswith(".pdf"):
+        content = ""
         with pdfplumber.open(file) as pdf:
             for page in pdf.pages:
-                content += page.extract_text() + "\n"
+                page_text = page.extract_text()
+                if page_text:
+                    content += page_text + "\n"
+        return content
+    return "Formato não suportado."
+
+# -----------------------------
+# Classificador local
+# -----------------------------
+CLASSIFIER = pipeline(
+    "text-classification",
+    model="cardiffnlp/twitter-roberta-base-sentiment-latest",
+    top_k=1 
+)
+
+def classify_email(text: str):
+    """Classifica email como 'Produtivo' ou 'Improdutivo'."""
+    result = CLASSIFIER(text[:500])[0]
+    label = result["label"]
+    text_lower = text.lower()
+    
+    if label == "LABEL_0":  # Negativo -> Produtivo
+        categoria = "Produtivo"
+    elif label == "LABEL_2":  # Positivo -> palavras sociais
+        if any(word in text_lower for word in ["obrigado", "parabens", "feliz", "agradec"]):
+            categoria = "Improdutivo"
+        else:
+            categoria = "Produtivo"
     else:
-        content = "Formato não suportado."
-    return content
+        categoria = "Produtivo"  # Neutro
+    
+    return categoria, 1.0, "local_model"
 
-def classify_email(text: str) -> tuple:
-    """
-    Classificação híbrida:
-    - Se regras baterem, retorna alta confiança
-    - Caso contrário, usa modelo ML (simulado)
-    """
-    text = preprocess_text(text)
 
-    regras_produtivo = ["projeto", "relatorio", "prazo", "entrega", "reuniao", "orcamento", "solicitar", "urgente"]
-    regras_improdutivo = ["promocao", "oferta", "desconto", "feliz natal", "boas festas"]
+# -----------------------------
+# Gerador de respostas via API Gemma
+# -----------------------------
+HF_TOKEN = os.getenv("HF_TOKEN")
+API_URL = "https://api-inference.huggingface.co/models/google/gemma-3-270m"
+HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
 
-    for palavra in regras_produtivo:
-        if palavra in text:
-            return "Produtivo", 0.99, "rule"
-
-    for palavra in regras_improdutivo:
-        if palavra in text:
-            return "Improdutivo", 0.99, "rule"
-
-    # Se nenhuma regra bateu, usa modelo ML (simulado)
-    return classify_email_ml(text)
-
-def classify_email_ml(text: str) -> tuple:
-    """
-    Simulação de modelo de Machine Learning (aqui ainda é simples)
-    """
-    # Exemplo: só para simular, ajusta confiança baseado no comprimento
-    if len(text.split()) > 10:
-        return "Produtivo", 0.75, "model"
-    else:
-        return "Improdutivo", 0.60, "model"
-
-def generate_response(category: str) -> str:
-    """Sugere uma resposta baseada na categoria"""
-    if category == "Produtivo":
-        return "Obrigado pelo contato! Vamos analisar as informações e retornaremos em breve."
-    else:
-        return "Obrigado pela mensagem! Registramos o seu contato. Se precisar de algo mais, estamos à disposição."
+def generate_response(category: str, text: str) -> str:
+    """Gera resposta ao email usando Gemma 3 270M via API."""
+    prompt = f"Responda ao seguinte email: {text[:200]}"
+    payload = {
+        "inputs": prompt,
+        "parameters": {"max_new_tokens": 150, "temperature": 0.7}
+    }
+    
+    try:
+        response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=30)
+        response.raise_for_status()
+        result = response.json()
+        
+        if isinstance(result, list) and result:
+            generated_text = result[0].get("generated_text", "")
+            response_text = generated_text[len(prompt):].strip()
+            return response_text if response_text else "Obrigado pelo contato!"
+        
+        return "Não foi possível gerar uma resposta."
+    
+    except Exception as e:
+        print(f"Erro ao gerar resposta via API: {e}")
+        return "Ocorreu um erro ao tentar gerar a resposta."

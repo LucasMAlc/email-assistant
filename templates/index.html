@@ -4,69 +4,69 @@
     <meta charset="UTF-8">
     <title>Email Assistant</title>
     <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+    <script defer src="{{ url_for('static', path='js/script.js') }}"></script>
 </head>
 <body>
-    <header>
-        <h1>Email Assistant</h1>
-    </header>
+<header>
+    <h1>Email Assistant</h1>
+</header>
 
-    <main>
-        <form method="post" action="/process" enctype="multipart/form-data" onsubmit="return validateForm()">
-            <label>Upload de arquivo (.txt ou .pdf):</label>
-            <input type="file" name="file">
+<main>
+    <form method="post" action="/process" enctype="multipart/form-data" onsubmit="return validateForm()">
+        <label>Upload de arquivo (.txt ou .pdf):</label>
+        <input type="file" name="file">
 
-            <label>Ou insira o texto do email:</label>
-            <textarea name="text" rows="6" cols="50"></textarea>
+        <label>Ou insira o texto do email:</label>
+        <textarea name="text" rows="6" cols="50"></textarea>
 
-            <button type="submit">Processar</button>
-        </form>
+        <button type="submit">Processar</button>
+    </form>
 
-        {% if error %}
-            <div class="error">Erro: {{ error }}</div>
+    {% if error %}
+        <div class="error">Erro: {{ error }}</div>
+    {% endif %}
+
+    {% if content %}
+        <h2>Conteúdo processado</h2>
+        <div class="content-box">{{ content }}</div>
+
+        {% if categoria %}
+            <div class="category {% if categoria=='Produtivo' %}produtivo{% else %}improdutivo{% endif %}">
+                Categoria: {{ categoria }} | Confiança: {{ confianca }} | Fonte: {{ fonte }}
+            </div>
+
+            <div class="suggestion">
+                <strong>Resposta sugerida:</strong>
+                <div id="resposta-text">{{ resposta }}</div>
+            </div>
+
+            <button type="button" class="copy-btn" onclick="copyResponse()">
+                Copiar Resposta
+            </button>
         {% endif %}
+    {% endif %}
 
-        {% if content %}
-            <h2>Conteúdo processado</h2>
-            <div class="content-box">{{ content }}</div>
+    <form method="post" action="/feedback" class="feedback">
+        <input type="hidden" name="original_text" value="{{ content }}">
+        <input type="hidden" name="predicted" value="{{ categoria }}">
+        
+        <label>Está correto?</label>
+        <select name="correction">
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
+        </select>
 
-            {% if categoria %}
-                <div class="category {% if categoria=='Produtivo' %}produtivo{% else %}improdutivo{% endif %}">
-                    Categoria: {{ categoria }} | Confiança: {{ confianca }} | Fonte: {{ fonte }}
-                </div>
+        <label>Se não, escolha a correta:</label>
+        <select name="new_category">
+            <option value="">--Selecione--</option>
+            <option value="Produtivo">Produtivo</option>
+            <option value="Improdutivo">Improdutivo</option>
+        </select>
 
-                <div class="suggestion">
-                    <strong>Resposta sugerida:</strong>
-                    <div id="suggestion-text">{{ resposta }}</div>
-                </div>
+        <button type="submit">Enviar feedback</button>
+    </form>
 
-                <button type="button" class="download-btn" id="copy-btn">
-                    Copiar Resposta
-                </button>
-            {% endif %}
-        {% endif %}
-
-        <form method="post" action="/feedback" class="feedback">
-            <input type="hidden" name="original_text" value="{{ content }}">
-            <input type="hidden" name="predicted" value="{{ categoria }}">
-            
-            <label>Está correto?</label>
-            <select name="correction">
-                <option value="sim">Sim</option>
-                <option value="nao">Não</option>
-            </select>
-
-            <label>Se não, escolha a correta:</label>
-            <select name="new_category">
-                <option value="">--Selecione--</option>
-                <option value="Produtivo">Produtivo</option>
-                <option value="Improdutivo">Improdutivo</option>
-            </select>
-
-            <button type="submit">Enviar feedback</button>
-        </form>
-    </main>
-
-    <!-- Carrega o JS no final do body -->
-    <script src="{{ url_for('static', path='js/script.js') }}"></script>
+    <div id="toast" class="toast"></div>
+</main>
 </body>
 </html>

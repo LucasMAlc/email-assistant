@@ -136,3 +136,35 @@ form.feedback select {
 .download-btn:hover {
     background-color: #004d80;
 }
+
+.copy-btn {
+    margin-top: 12px;
+    background-color: #28a745;
+}
+
+.copy-btn:hover {
+    background-color: #218838;
+}
+
+/* Toast */
+.toast {
+    visibility: hidden;
+    min-width: 200px;
+    background-color: #333;
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 10px;
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease, visibility 0.3s;
+}
+
+.toast.show {
+    visibility: visible;
+    opacity: 1;
+}
