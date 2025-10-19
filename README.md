@@ -69,7 +69,7 @@ bash start.sh
 ```
 No Windows, você também pode executar o comando diretamente no terminal:
 ```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app
 ```
 
 - Acesse a aplicação em: http://localhost:8000
