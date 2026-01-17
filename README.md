@@ -84,6 +84,6 @@ Acesse: **http://localhost:8000**
 
 ## 🌐 Deploy
 
-**Aplicação em produção:** [Link do deploy aqui]
+**Aplicação em produção:** [\[Link do deploy aqui\]](https://email-assistant-1kk4.onrender.com/)
 
 A aplicação está hospedada no Render com deploy automático via GitHub.
