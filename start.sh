@@ -1,5 +1,5 @@
 #!/bin/bash
 APP_DIR="app"
 
-# Roda o Uvicorn na porta 8000
+# Roda o Uvicorn
 uvicorn app.main:app
