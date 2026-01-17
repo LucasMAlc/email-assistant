@@ -2,83 +2,114 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Email Assistant</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
-    <script defer src="{{ url_for('static', path='js/script.js') }}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Assistant - Classificador Inteligente</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
 </head>
 <body>
-<header>
-    <h1>Email Assistant</h1>
-</header>
+    <div class="container">
+        <header>
+            <h1>📧 Email Assistant</h1>
+            <p class="subtitle">Classificação inteligente e respostas automatizadas</p>
+        </header>
 
-<main>
-    <form method="post" action="/process" enctype="multipart/form-data" onsubmit="showLoading(); return validateForm()">
-        <label>Upload de arquivo (.txt ou .pdf):</label>
-        <input type="file" name="file">
-
-        <label>Ou insira o texto do email:</label>
-        <textarea name="text" rows="6" cols="50"></textarea>
-
-        <button type="submit" id="process-btn">Processar</button>
-        <div id="loading" style="display:none; margin-top:10px; color:#005f99;">Processando...</div>
-    </form>
-
-    {% if error %}
-        <div class="error">Erro: {{ error }}</div>
-    {% endif %}
-
-    {% if content %}
-        <h2>Conteúdo processado</h2>
-        <div class="content-box">{{ content }}</div>
-
-        {% if categoria %}
-            <div class="category {% if categoria=='Produtivo' %}produtivo{% else %}improdutivo{% endif %}">
-                Categoria: {{ categoria }}
+        <main>
+            <!-- Abas -->
+            <div class="tabs">
+                <button class="tab active" data-tab="upload">📁 Upload de Arquivo</button>
+                <button class="tab" data-tab="text">✍️ Inserir Texto</button>
             </div>
 
-            <div class="suggestion">
-                <strong>Resposta sugerida:</strong>
-                <div id="resposta-text">{{ resposta }}</div>
+            <!-- Conteúdo das Abas -->
+            <div class="tab-content active" id="upload-tab">
+                <div class="upload-zone" id="uploadZone">
+                    <span class="upload-icon">📎</span>
+                    <div class="upload-text">Clique ou arraste um arquivo</div>
+                    <div class="upload-hint">Formatos aceitos: .txt, .pdf (max 2MB)</div>
+                </div>
+                <input type="file" id="fileInput" accept=".txt,.pdf">
+                
+                <div class="file-preview" id="filePreview">
+                    <div class="file-info">
+                        <div class="file-name" id="fileName"></div>
+                        <div class="file-size" id="fileSize"></div>
+                    </div>
+                    <button class="remove-file" onclick="removeFile()">✕ Remover</button>
+                </div>
             </div>
 
-            <button type="button" class="copy-btn" onclick="copyResponse()">
-                Copiar Resposta
+            <div class="tab-content" id="text-tab">
+                <textarea id="emailText" placeholder="Cole ou digite o conteúdo do email aqui..."></textarea>
+                <div class="char-counter">
+                    <span id="charCount">0</span> / 10000 caracteres
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="processEmail()" id="processBtn">
+                🚀 Processar Email
             </button>
-        {% endif %}
-    {% endif %}
 
-    <form method="post" action="/feedback" class="feedback">
-        <input type="hidden" name="original_text" value="{{ content }}">
-        <input type="hidden" name="predicted" value="{{ categoria }}">
+            <!-- Área de Resultados -->
+            <div id="resultArea" style="display: none;">
+                <div class="result-card">
+                    <div class="result-header">
+                        <h2 style="color: var(--primary); margin: 0;">Resultado da Análise</h2>
+                        <div class="category-badge" id="categoryBadge">
+                            <span id="categoryIcon"></span>
+                            <span id="categoryText"></span>
+                        </div>
+                    </div>
 
-        <label>Está correto?</label>
-        <select name="correction">
-            <option value="sim">Sim</option>
-            <option value="nao">Não</option>
-        </select>
+                    <div class="response-box">
+                        <div class="response-label">💬 Resposta Sugerida</div>
+                        <div class="response-text" id="responseText"></div>
+                    </div>
 
-        <label>Se não, escolha a correta:</label>
-        <select name="new_category">
-            <option value="">--Selecione--</option>
-            <option value="Produtivo">Produtivo</option>
-            <option value="Improdutivo">Improdutivo</option>
-        </select>
+                    <button class="btn btn-copy" onclick="copyResponse()" style="margin-top: 16px;">
+                        📋 Copiar Resposta
+                    </button>
+                </div>
 
-        <button type="submit">Enviar feedback</button>
-    </form>
+                <!-- Feedback -->
+                <div class="feedback-section">
+                    <div class="feedback-title">A classificação está correta?</div>
+                    <div class="feedback-buttons">
+                        <button class="feedback-btn" onclick="sendFeedback('correct')">
+                            ✓ Sim, está correta
+                        </button>
+                        <button class="feedback-btn" onclick="showCorrectionOptions()">
+                            ✕ Não, corrigir
+                        </button>
+                    </div>
+                    <div id="correctionOptions" style="display: none; margin-top: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Categoria correta:</label>
+                        <select id="correctionCategory" style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid var(--border);">
+                            <option value="">-- Selecione --</option>
+                            <option value="Produtivo">Produtivo</option>
+                            <option value="Improdutivo">Improdutivo</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="sendFeedback('incorrect')" style="margin-top: 12px;">
+                            Enviar Correção
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
-    <div id="toast" class="toast"></div>
-</main>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Processando email...</div>
+        </div>
+    </div>
 
-<script>
-window.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('feedback') === '1') {
-        showToast("Feedback enviado!");
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
-});
-</script>
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span id="toastMessage"></span>
+    </div>
 
+    <script src="{{ url_for('static', path='/js/script.js') }}"></script>
 </body>
 </html>
