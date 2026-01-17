@@ -1,96 +1,89 @@
-# Email Assistant
+# 📧 Email Assistant - Classificador Inteligente
 
-Um assistente de emails que classifica mensagens como Produtivas ou Improdutivas e gera respostas automáticas usando a API DeepSeek.
+Sistema de classificação automática de emails com IA para empresas do setor financeiro. Classifica emails em **Produtivo** ou **Improdutivo** e gera respostas automáticas personalizadas.
 
-Disponível em: [Email Assistant](https://email-assistant-1kk4.onrender.com)
+## 🎯 Funcionalidades
 
-### Funcionalidades
+- ✅ Classificação automática de emails usando IA (DeepSeek)
+- ✅ Geração de respostas personalizadas
+- ✅ Upload de arquivos (.txt, .pdf) ou entrada de texto direto
+- ✅ Interface moderna com drag-and-drop
+- ✅ Sistema de feedback para melhoria contínua
+- ✅ API RESTful completa
 
-- Upload de arquivos .txt ou .pdf ou digitação manual do texto do email.
+## 🛠️ Tecnologias
 
-- Classificação automática do email (Produtivo / Improdutivo).
-
-- Geração de resposta formal e educada ao email.
-
-- Feedback do usuário, salvo em CSV (data/feedback.csv).
-
-- Copiar resposta para o clipboard.
-
-### Tecnologias
-
-- Python 3.11+
+**Backend:**
+- Python 3.9+
 - FastAPI
-- Jinja2 (templates HTML)
+- Pydantic
 - OpenAI SDK (DeepSeek API)
-- NLTK (stopwords em português)
-- pdfplumber (para leitura de PDFs)
-- CSV (armazenamento de feedback)
-- HTML/CSS/JS para frontend
+- NLTK
+- pdfplumber
+- Pandas
 
-## Configuração local
+**Frontend:**
+- HTML5, CSS3, JavaScript
+- Design responsivo
 
-1. Clone o repositório:
-
-```bash
-git clone https://github.com/LucasMAlc/email-assistant
-cd email-assistant
+## 📁 Estrutura do Projeto
 ```
-
-2. Crie e ative o ambiente virtual:
-
-```bash
-python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# Linux/macOS
-source .venv/bin/activate
-```
-
-3. Instale as dependências:
-
-```bash
-pip install -r requirements.txt
-```
-
-4. Configure as variáveis de ambiente:
-Crie um arquivo .env na raiz do projeto:
-
-```bash
-DEEPSEEK_API_KEY=your_deepseek_api_key
-```
-
-### Rodar localmente
-
-- Windows / Linux / macOS:
-
-```bash
-# Na raiz do projeto
-bash start.sh
-```
-No Windows, você também pode executar o comando diretamente no terminal:
-```bash
-uvicorn app.main:app
-```
-
-- Acesse a aplicação em: http://localhost:8000
-
-### Estrutura do projeto
-```bash
 email-assistant/
-│
-├─ app/
-│  ├─ main.py          # FastAPI app
-│  ├─ utils.py         # Funções de extração, classificação e geração de respostas
-│
-├─ templates/
-│  └─ index.html       # Frontend
-├─ static/
-│  ├─ css/style.css    # CSS
-│  └─ js/script.js     # Scripts
-├─ data/
-│  └─ feedback.csv     # Feedback salvos no .csv
-├─ .env
-├─ requirements.txt
-├─ start.sh
-└─ README.md
+├── app/
+│   ├── core/          # Configurações e logging
+│   ├── models/        # Schemas Pydantic
+│   ├── services/      # Lógica de negócio (IA, arquivos, feedback)
+│   └── api/           # Rotas da API
+├── static/            # CSS e JavaScript
+├── templates/         # HTML
+└── data/              # Dados de feedback
 ```
+
+## 🚀 Como Rodar Localmente
+
+### **Pré-requisitos**
+- Python 3.9 ou superior
+- Conta na [DeepSeek](https://www.deepseek.com/) para obter API key
+
+### **Instalação**
+```bash
+# 1. Clone o repositório
+git clone <seu-repositorio>
+cd email-assistant
+
+# 2. Crie um ambiente virtual
+python -m venv venv
+
+# 3. Ative o ambiente virtual
+# Windows:
+venv\Scripts\activate
+# Linux/Mac:
+source venv/bin/activate
+
+# 4. Instale as dependências
+pip install -r requirements.txt
+
+# 5. Configure as variáveis de ambiente
+# Crie um arquivo .env na raiz do projeto:
+DEEPSEEK_API_KEY=sua_chave_aqui
+DEBUG=False
+
+# 6. Execute a aplicação
+python -m app.main
+```
+
+Acesse: **http://localhost:8000**
+
+## 📡 Endpoints da API
+
+- `GET /` - Interface web
+- `POST /process` - Classificar email
+- `POST /feedback` - Enviar feedback
+- `GET /metrics` - Obter métricas
+- `GET /health` - Health check
+
+## 🌐 Deploy
+
+**Aplicação em produção:** [Link do deploy aqui]
+
+A aplicação está hospedada no Render com deploy automático via GitHub.
